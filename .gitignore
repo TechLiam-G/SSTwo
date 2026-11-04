@@ -1,0 +1,11 @@
+.gradle/
+build/
+run/
+out/
+
+# IDE metadata
+.idea/
+*.iml
+
+# Operating system files
+.DS_Store
