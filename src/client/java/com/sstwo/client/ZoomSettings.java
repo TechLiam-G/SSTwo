@@ -42,6 +42,9 @@ final class ZoomSettings {
     private static boolean autoClicker;
     private static boolean autoTotem;
     private static boolean autoSprint;
+    private static boolean extendedReach;
+    private static boolean autoTool;
+    private static boolean autoEat;
 
     private ZoomSettings() {
     }
@@ -128,6 +131,18 @@ final class ZoomSettings {
 
     static boolean isAutoSprintEnabled() {
         return autoSprint;
+    }
+
+    static boolean isExtendedReachEnabled() {
+        return extendedReach;
+    }
+
+    static boolean isAutoToolEnabled() {
+        return autoTool;
+    }
+
+    static boolean isAutoEatEnabled() {
+        return autoEat;
     }
 
     static void setZoomFov(int value) {
@@ -220,6 +235,21 @@ final class ZoomSettings {
         save();
     }
 
+    static void toggleExtendedReach() {
+        extendedReach = !extendedReach;
+        save();
+    }
+
+    static void toggleAutoTool() {
+        autoTool = !autoTool;
+        save();
+    }
+
+    static void toggleAutoEat() {
+        autoEat = !autoEat;
+        save();
+    }
+
     static void reset() {
         zoomFov = 30;
         zoomStep = 5;
@@ -239,6 +269,9 @@ final class ZoomSettings {
         autoClicker = false;
         autoTotem = false;
         autoSprint = false;
+        extendedReach = false;
+        autoTool = false;
+        autoEat = false;
         save();
     }
 
@@ -268,6 +301,9 @@ final class ZoomSettings {
             boolean loadedAutoClicker = Boolean.parseBoolean(properties.getProperty("autoClicker", "false"));
             boolean loadedAutoTotem = Boolean.parseBoolean(properties.getProperty("autoTotem", "false"));
             boolean loadedAutoSprint = Boolean.parseBoolean(properties.getProperty("autoSprint", "false"));
+            boolean loadedExtendedReach = Boolean.parseBoolean(properties.getProperty("extendedReach", "false"));
+            boolean loadedAutoTool = Boolean.parseBoolean(properties.getProperty("autoTool", "false"));
+            boolean loadedAutoEat = Boolean.parseBoolean(properties.getProperty("autoEat", "false"));
             if (loadedFov < MIN_ZOOM_FOV || loadedFov > MAX_ZOOM_FOV) {
                 throw new IllegalArgumentException("zoomFov must be between 30 and 70");
             }
@@ -304,6 +340,9 @@ final class ZoomSettings {
             autoClicker = loadedAutoClicker;
             autoTotem = loadedAutoTotem;
             autoSprint = loadedAutoSprint;
+            extendedReach = loadedExtendedReach;
+            autoTool = loadedAutoTool;
+            autoEat = loadedAutoEat;
         } catch (IOException | IllegalArgumentException exception) {
             LOGGER.error("Could not load SSTwo settings from {}", CONFIG_FILE, exception);
         }
@@ -329,6 +368,9 @@ final class ZoomSettings {
         properties.setProperty("autoClicker", Boolean.toString(autoClicker));
         properties.setProperty("autoTotem", Boolean.toString(autoTotem));
         properties.setProperty("autoSprint", Boolean.toString(autoSprint));
+        properties.setProperty("extendedReach", Boolean.toString(extendedReach));
+        properties.setProperty("autoTool", Boolean.toString(autoTool));
+        properties.setProperty("autoEat", Boolean.toString(autoEat));
         try {
             Files.createDirectories(CONFIG_FILE.getParent());
             try (OutputStream output = Files.newOutputStream(CONFIG_FILE)) {

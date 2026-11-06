@@ -1,8 +1,13 @@
 package com.sstwo.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
@@ -22,6 +27,13 @@ final class CheatController {
     private static long nextTotemAttemptTick;
     private static int oreScanTicks;
     private static BlockPos autoMiningPosition;
+    private static int originalHotbarSlot = -1;
+    private static int autoEatOriginalSlot = -1;
+    private static LocalPlayer autoEatPlayer;
+    private static LocalPlayer reachPlayer;
+    private static double originalBlockReach;
+    private static double originalEntityReach;
+    private static boolean reachApplied;
 
     private CheatController() {
     }
@@ -31,12 +43,20 @@ final class CheatController {
             nextClickTime = 0;
             nextTotemAttemptTick = 0;
             autoMiningPosition = null;
+            restoreReach();
+            originalHotbarSlot = -1;
+            restoreAutoEat();
             oreLines.clear();
             return;
         }
 
         if (client.gui.screen() != null) {
             nextClickTime = 0;
+            restoreAutoTool(client);
+            restoreReach();
+            if (autoEatPlayer != null && !autoEatPlayer.isUsingItem()) {
+                restoreAutoEat();
+            }
             if (autoMiningPosition != null) {
                 client.gameMode.stopDestroyBlock();
                 autoMiningPosition = null;
@@ -44,6 +64,21 @@ final class CheatController {
             return;
         }
 
+        if (ZoomSettings.isExtendedReachEnabled()) {
+            applyReach(client.player);
+        } else {
+            restoreReach();
+        }
+        if (ZoomSettings.isAutoToolEnabled()) {
+            autoTool(client);
+        } else {
+            restoreAutoTool(client);
+        }
+        if (ZoomSettings.isAutoEatEnabled()) {
+            autoEat(client);
+        } else {
+            restoreAutoEat();
+        }
         if (ZoomSettings.isAutoTotemEnabled()) {
             equipTotem(client);
         }
@@ -67,6 +102,125 @@ final class CheatController {
             oreScanTicks = 0;
             oreLines.clear();
         }
+    }
+
+    private static void applyReach(LocalPlayer player) {
+        if (reachPlayer != player) {
+            restoreReach();
+            reachPlayer = player;
+            AttributeInstance blockReach = player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+            AttributeInstance entityReach = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+            if (blockReach == null || entityReach == null) {
+                reachPlayer = null;
+                return;
+            }
+            originalBlockReach = blockReach.getBaseValue();
+            originalEntityReach = entityReach.getBaseValue();
+            reachApplied = true;
+        }
+
+        if (!reachApplied) {
+            return;
+        }
+        player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).setBaseValue(6.0);
+        player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).setBaseValue(6.0);
+    }
+
+    private static void restoreReach() {
+        if (reachApplied && reachPlayer != null) {
+            AttributeInstance blockReach = reachPlayer.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+            AttributeInstance entityReach = reachPlayer.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+            if (blockReach != null) {
+                blockReach.setBaseValue(originalBlockReach);
+            }
+            if (entityReach != null) {
+                entityReach.setBaseValue(originalEntityReach);
+            }
+        }
+        reachPlayer = null;
+        reachApplied = false;
+    }
+
+    private static void autoTool(Minecraft client) {
+        if (!client.options.keyAttack.isDown() || !(client.hitResult instanceof BlockHitResult blockHit)) {
+            restoreAutoTool(client);
+            return;
+        }
+
+        Inventory inventory = client.player.getInventory();
+        int selectedSlot = inventory.getSelectedSlot();
+        if (originalHotbarSlot == -1) {
+            originalHotbarSlot = selectedSlot;
+        }
+
+        var state = client.level.getBlockState(blockHit.getBlockPos());
+        int bestSlot = selectedSlot;
+        float bestSpeed = inventory.getItem(selectedSlot).getDestroySpeed(state);
+        for (int slot = 0; slot < 9; slot++) {
+            float speed = inventory.getItem(slot).getDestroySpeed(state);
+            if (speed > bestSpeed) {
+                bestSlot = slot;
+                bestSpeed = speed;
+            }
+        }
+        inventory.setSelectedSlot(bestSlot);
+    }
+
+    private static void restoreAutoTool(Minecraft client) {
+        if (originalHotbarSlot != -1 && client.player != null) {
+            client.player.getInventory().setSelectedSlot(originalHotbarSlot);
+        }
+        originalHotbarSlot = -1;
+    }
+
+    private static void autoEat(Minecraft client) {
+        var player = client.player;
+        if (autoEatOriginalSlot != -1) {
+            if (player.isUsingItem()) {
+                return;
+            }
+            restoreAutoEat();
+            return;
+        }
+
+        if (!player.getFoodData().needsFood()
+                || player.getFoodData().getFoodLevel() > 14
+                || player.isUsingItem()
+                || client.options.keyAttack.isDown()
+                || client.options.keyUse.isDown()) {
+            return;
+        }
+
+        Inventory inventory = player.getInventory();
+        int selectedSlot = inventory.getSelectedSlot();
+        int foodSlot = -1;
+        int bestNutrition = 0;
+        for (int slot = 0; slot < 9; slot++) {
+            var food = inventory.getItem(slot).get(DataComponents.FOOD);
+            if (food != null && food.nutrition() > bestNutrition) {
+                foodSlot = slot;
+                bestNutrition = food.nutrition();
+            }
+        }
+        if (foodSlot == -1) {
+            return;
+        }
+
+        inventory.setSelectedSlot(foodSlot);
+        autoEatOriginalSlot = selectedSlot;
+        autoEatPlayer = player;
+        client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+        if (!player.isUsingItem()) {
+            restoreAutoEat();
+        }
+    }
+
+    private static void restoreAutoEat() {
+        if (autoEatOriginalSlot != -1 && autoEatPlayer != null) {
+            autoEatPlayer.getInventory().setSelectedSlot(autoEatOriginalSlot);
+        }
+        autoEatOriginalSlot = -1;
+        autoEatPlayer = null;
     }
 
     static List<String> getOreLines() {

@@ -182,6 +182,12 @@ public final class SSTwoSettingsScreen extends Screen {
                 autoTotemLabel(), ZoomSettings::toggleAutoTotem, this::autoTotemLabel);
         addToggleOption(Category.CHEATS, "auto sprint run forward",
                 autoSprintLabel(), ZoomSettings::toggleAutoSprint, this::autoSprintLabel);
+        addToggleOption(Category.CHEATS, "extended longer long reach block entity interaction distance",
+                extendedReachLabel(), ZoomSettings::toggleExtendedReach, this::extendedReachLabel);
+        addToggleOption(Category.CHEATS, "auto tool best pickaxe axe shovel mining switch hotbar",
+                autoToolLabel(), ZoomSettings::toggleAutoTool, this::autoToolLabel);
+        addToggleOption(Category.CHEATS, "auto eat food hunger automatic",
+                autoEatLabel(), ZoomSettings::toggleAutoEat, this::autoEatLabel);
     }
 
     private void addKeybindOptions() {
@@ -429,6 +435,21 @@ public final class SSTwoSettingsScreen extends Screen {
     private Component autoSprintLabel() {
         return Component.literal("Auto sprint (while moving forward)  •  "
                 + onOff(ZoomSettings.isAutoSprintEnabled()));
+    }
+
+    private Component extendedReachLabel() {
+        return Component.literal("Extended reach (6 blocks; server permitting)  •  "
+                + onOff(ZoomSettings.isExtendedReachEnabled()));
+    }
+
+    private Component autoToolLabel() {
+        return Component.literal("Auto tool (best hotbar tool while mining)  •  "
+                + onOff(ZoomSettings.isAutoToolEnabled()));
+    }
+
+    private Component autoEatLabel() {
+        return Component.literal("Auto eat (hotbar food when hunger is low)  •  "
+                + onOff(ZoomSettings.isAutoEatEnabled()));
     }
 
     private String onOff(boolean enabled) {
