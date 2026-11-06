@@ -20,6 +20,8 @@ final class ZoomSettings {
     private static final int MAX_ZOOM_STEP = 10;
     private static final int MIN_HUD_OPACITY = 20;
     private static final int MAX_HUD_OPACITY = 100;
+    private static final int MIN_AUTOCLICK_CPS = 3;
+    private static final int MAX_AUTOCLICK_CPS = 1000;
     private static final String[] HUD_POSITIONS = {"Top left", "Top right", "Bottom left", "Bottom right"};
     private static final String[] CROSSHAIR_MODES = {"Vanilla", "PvP", "Bridging"};
     private static final String[] HIT_PARTICLE_STYLES = {"Stars", "Purple portal", "End rod", "Enchant"};
@@ -41,6 +43,8 @@ final class ZoomSettings {
     private static boolean oreFinder;
     private static boolean autoClicker;
     private static boolean autoBridgeClicker;
+    private static int autoClickerCps = 8;
+    private static int autoBridgeClickerCps = 20;
     private static boolean autoTotem;
     private static boolean autoSprint;
     private static boolean extendedReach;
@@ -128,6 +132,14 @@ final class ZoomSettings {
 
     static boolean isAutoBridgeClickerEnabled() {
         return autoBridgeClicker;
+    }
+
+    static int getAutoClickerCps() {
+        return autoClickerCps;
+    }
+
+    static int getAutoBridgeClickerCps() {
+        return autoBridgeClickerCps;
     }
 
     static boolean isAutoTotemEnabled() {
@@ -235,6 +247,16 @@ final class ZoomSettings {
         save();
     }
 
+    static void setAutoClickerCps(int value) {
+        autoClickerCps = Math.clamp(value, MIN_AUTOCLICK_CPS, MAX_AUTOCLICK_CPS);
+        save();
+    }
+
+    static void setAutoBridgeClickerCps(int value) {
+        autoBridgeClickerCps = Math.clamp(value, MIN_AUTOCLICK_CPS, MAX_AUTOCLICK_CPS);
+        save();
+    }
+
     static void toggleAutoTotem() {
         autoTotem = !autoTotem;
         save();
@@ -278,6 +300,8 @@ final class ZoomSettings {
         oreFinder = false;
         autoClicker = false;
         autoBridgeClicker = false;
+        autoClickerCps = 8;
+        autoBridgeClickerCps = 20;
         autoTotem = false;
         autoSprint = false;
         extendedReach = false;
@@ -312,6 +336,9 @@ final class ZoomSettings {
             boolean loadedAutoClicker = Boolean.parseBoolean(properties.getProperty("autoClicker", "false"));
             boolean loadedAutoBridgeClicker = Boolean.parseBoolean(
                     properties.getProperty("autoBridgeClicker", "false"));
+            int loadedAutoClickerCps = Integer.parseInt(properties.getProperty("autoClickerCps", "8"));
+            int loadedAutoBridgeClickerCps = Integer.parseInt(
+                    properties.getProperty("autoBridgeClickerCps", "20"));
             boolean loadedAutoTotem = Boolean.parseBoolean(properties.getProperty("autoTotem", "false"));
             boolean loadedAutoSprint = Boolean.parseBoolean(properties.getProperty("autoSprint", "false"));
             boolean loadedExtendedReach = Boolean.parseBoolean(properties.getProperty("extendedReach", "false"));
@@ -335,6 +362,13 @@ final class ZoomSettings {
             if (loadedHitParticleStyle < 0 || loadedHitParticleStyle >= HIT_PARTICLE_STYLES.length) {
                 throw new IllegalArgumentException("hitParticleStyle is not valid");
             }
+            if (loadedAutoClickerCps < MIN_AUTOCLICK_CPS || loadedAutoClickerCps > MAX_AUTOCLICK_CPS) {
+                throw new IllegalArgumentException("autoClickerCps must be between 3 and 1000");
+            }
+            if (loadedAutoBridgeClickerCps < MIN_AUTOCLICK_CPS
+                    || loadedAutoBridgeClickerCps > MAX_AUTOCLICK_CPS) {
+                throw new IllegalArgumentException("autoBridgeClickerCps must be between 3 and 1000");
+            }
             zoomFov = loadedFov;
             zoomStep = loadedStep;
             hudOpacity = loadedHudOpacity;
@@ -352,6 +386,8 @@ final class ZoomSettings {
             oreFinder = loadedOreFinder;
             autoClicker = loadedAutoClicker;
             autoBridgeClicker = loadedAutoBridgeClicker;
+            autoClickerCps = loadedAutoClickerCps;
+            autoBridgeClickerCps = loadedAutoBridgeClickerCps;
             autoTotem = loadedAutoTotem;
             autoSprint = loadedAutoSprint;
             extendedReach = loadedExtendedReach;
@@ -381,6 +417,8 @@ final class ZoomSettings {
         properties.setProperty("oreFinder", Boolean.toString(oreFinder));
         properties.setProperty("autoClicker", Boolean.toString(autoClicker));
         properties.setProperty("autoBridgeClicker", Boolean.toString(autoBridgeClicker));
+        properties.setProperty("autoClickerCps", Integer.toString(autoClickerCps));
+        properties.setProperty("autoBridgeClickerCps", Integer.toString(autoBridgeClickerCps));
         properties.setProperty("autoTotem", Boolean.toString(autoTotem));
         properties.setProperty("autoSprint", Boolean.toString(autoSprint));
         properties.setProperty("extendedReach", Boolean.toString(extendedReach));

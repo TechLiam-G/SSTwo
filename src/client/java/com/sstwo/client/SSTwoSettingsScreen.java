@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 public final class SSTwoSettingsScreen extends Screen {
     private static final int PANEL_WIDTH = 560;
@@ -178,8 +180,12 @@ public final class SSTwoSettingsScreen extends Screen {
                 oreFinderLabel(), ZoomSettings::toggleOreFinder, this::oreFinderLabel);
         addToggleOption(Category.CHEATS, "autoclicker auto click attack cps hold mouse",
                 autoClickerLabel(), ZoomSettings::toggleAutoClicker, this::autoClickerLabel);
+        addCpsOption("attack autoclicker clicks per second cps", "Attack speed",
+                ZoomSettings::getAutoClickerCps, ZoomSettings::setAutoClickerCps);
         addToggleOption(Category.CHEATS, "right click autoclicker bridge block placement hold use",
                 autoBridgeClickerLabel(), ZoomSettings::toggleAutoBridgeClicker, this::autoBridgeClickerLabel);
+        addCpsOption("bridge autoclicker right click clicks per second cps", "Bridge speed",
+                ZoomSettings::getAutoBridgeClickerCps, ZoomSettings::setAutoBridgeClickerCps);
         addToggleOption(Category.CHEATS, "auto totem offhand pop re-equip inventory",
                 autoTotemLabel(), ZoomSettings::toggleAutoTotem, this::autoTotemLabel);
         addToggleOption(Category.CHEATS, "auto sprint run forward",
@@ -284,6 +290,30 @@ public final class SSTwoSettingsScreen extends Screen {
             button.setMessage(labelFactory.get());
         });
         addOption(category, searchTerms, button);
+    }
+
+    private void addCpsOption(String searchTerms, String label, IntSupplier cpsSupplier, IntConsumer cpsSetter) {
+        int narrowWidth = 38;
+        int labelWidth = contentWidth - narrowWidth * 2 - 12;
+        SSTwoButton cpsButton = new SSTwoButton(0, 0, labelWidth, 22, cpsLabel(label, cpsSupplier), () -> {});
+        addOption(Category.CHEATS, searchTerms,
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("−"),
+                        () -> changeCps(label, cpsSupplier, cpsSetter, cpsButton, -1)),
+                cpsButton,
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("+"),
+                        () -> changeCps(label, cpsSupplier, cpsSetter, cpsButton, 1)));
+    }
+
+    private void changeCps(String label, IntSupplier cpsSupplier, IntConsumer cpsSetter,
+                           SSTwoButton cpsButton, int direction) {
+        int cps = cpsSupplier.getAsInt();
+        int step = cps < 20 ? 1 : cps < 100 ? 5 : 50;
+        cpsSetter.accept(cps + direction * step);
+        cpsButton.setMessage(cpsLabel(label, cpsSupplier));
+    }
+
+    private Component cpsLabel(String label, IntSupplier cpsSupplier) {
+        return Component.literal(label + "  •  " + cpsSupplier.getAsInt() + " CPS (3–1000)");
     }
 
     private void addOption(Category category, String searchTerms, SSTwoButton... widgets) {
@@ -425,12 +455,12 @@ public final class SSTwoSettingsScreen extends Screen {
     }
 
     private Component autoClickerLabel() {
-        return Component.literal("Autoclicker (8 CPS while holding attack)  •  "
+        return Component.literal("Attack autoclicker (while holding attack)  •  "
                 + onOff(ZoomSettings.isAutoClickerEnabled()));
     }
 
     private Component autoBridgeClickerLabel() {
-        return Component.literal("Bridge autoclicker (8 CPS while holding use)  •  "
+        return Component.literal("Bridge autoclicker (hold use; block targets only)  •  "
                 + onOff(ZoomSettings.isAutoBridgeClickerEnabled()));
     }
 

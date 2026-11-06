@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 final class CheatController {
-    private static final long AUTOCLICK_INTERVAL_NANOS = 125_000_000L;
+    private static final int MAX_CATCH_UP_CLICKS_PER_TICK = 100;
     private static final int ORE_SCAN_RADIUS = 8;
     private static final int MAX_ORE_RESULTS = 4;
     private static final List<String> oreLines = new ArrayList<>();
@@ -268,28 +268,43 @@ final class CheatController {
         }
 
         long now = System.nanoTime();
-        if (now >= nextClickTime) {
-            nextClickTime = now + AUTOCLICK_INTERVAL_NANOS;
+        long interval = clickIntervalNanos(ZoomSettings.getAutoClickerCps());
+        if (nextClickTime == 0) {
+            nextClickTime = now;
+        }
+        int clicks = 0;
+        while (now >= nextClickTime && clicks++ < MAX_CATCH_UP_CLICKS_PER_TICK) {
+            nextClickTime += interval;
             client.gameMode.attack(client.player, client.crosshairPickEntity);
+        }
+        if (clicks > MAX_CATCH_UP_CLICKS_PER_TICK) {
+            nextClickTime = now + interval;
         }
     }
 
     private static void autoBridgeClick(Minecraft client) {
-        if (!client.options.keyUse.isDown()) {
+        if (!client.options.keyUse.isDown() || !(client.hitResult instanceof BlockHitResult blockHit)) {
             nextUseClickTime = 0;
             return;
         }
 
         long now = System.nanoTime();
-        if (now < nextUseClickTime) {
-            return;
+        long interval = clickIntervalNanos(ZoomSettings.getAutoBridgeClickerCps());
+        if (nextUseClickTime == 0) {
+            nextUseClickTime = now;
         }
-        nextUseClickTime = now + AUTOCLICK_INTERVAL_NANOS;
-        if (client.hitResult instanceof BlockHitResult blockHit) {
+        int clicks = 0;
+        while (now >= nextUseClickTime && clicks++ < MAX_CATCH_UP_CLICKS_PER_TICK) {
+            nextUseClickTime += interval;
             client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, blockHit);
-        } else {
-            client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND);
         }
+        if (clicks > MAX_CATCH_UP_CLICKS_PER_TICK) {
+            nextUseClickTime = now + interval;
+        }
+    }
+
+    private static long clickIntervalNanos(int cps) {
+        return 1_000_000_000L / cps;
     }
 
     private static void equipTotem(Minecraft client) {
