@@ -178,6 +178,8 @@ public final class SSTwoSettingsScreen extends Screen {
                 oreFinderLabel(), ZoomSettings::toggleOreFinder, this::oreFinderLabel);
         addToggleOption(Category.CHEATS, "autoclicker auto click attack cps hold mouse",
                 autoClickerLabel(), ZoomSettings::toggleAutoClicker, this::autoClickerLabel);
+        addToggleOption(Category.CHEATS, "right click autoclicker bridge block placement hold use",
+                autoBridgeClickerLabel(), ZoomSettings::toggleAutoBridgeClicker, this::autoBridgeClickerLabel);
         addToggleOption(Category.CHEATS, "auto totem offhand pop re-equip inventory",
                 autoTotemLabel(), ZoomSettings::toggleAutoTotem, this::autoTotemLabel);
         addToggleOption(Category.CHEATS, "auto sprint run forward",
@@ -425,6 +427,11 @@ public final class SSTwoSettingsScreen extends Screen {
     private Component autoClickerLabel() {
         return Component.literal("Autoclicker (8 CPS while holding attack)  •  "
                 + onOff(ZoomSettings.isAutoClickerEnabled()));
+    }
+
+    private Component autoBridgeClickerLabel() {
+        return Component.literal("Bridge autoclicker (8 CPS while holding use)  •  "
+                + onOff(ZoomSettings.isAutoBridgeClickerEnabled()));
     }
 
     private Component autoTotemLabel() {

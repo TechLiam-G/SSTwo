@@ -40,6 +40,7 @@ final class ZoomSettings {
     private static boolean hitParticles = true;
     private static boolean oreFinder;
     private static boolean autoClicker;
+    private static boolean autoBridgeClicker;
     private static boolean autoTotem;
     private static boolean autoSprint;
     private static boolean extendedReach;
@@ -123,6 +124,10 @@ final class ZoomSettings {
 
     static boolean isAutoClickerEnabled() {
         return autoClicker;
+    }
+
+    static boolean isAutoBridgeClickerEnabled() {
+        return autoBridgeClicker;
     }
 
     static boolean isAutoTotemEnabled() {
@@ -225,6 +230,11 @@ final class ZoomSettings {
         save();
     }
 
+    static void toggleAutoBridgeClicker() {
+        autoBridgeClicker = !autoBridgeClicker;
+        save();
+    }
+
     static void toggleAutoTotem() {
         autoTotem = !autoTotem;
         save();
@@ -267,6 +277,7 @@ final class ZoomSettings {
         hitParticles = true;
         oreFinder = false;
         autoClicker = false;
+        autoBridgeClicker = false;
         autoTotem = false;
         autoSprint = false;
         extendedReach = false;
@@ -299,6 +310,8 @@ final class ZoomSettings {
             boolean loadedHitParticles = Boolean.parseBoolean(properties.getProperty("hitParticles", "true"));
             boolean loadedOreFinder = Boolean.parseBoolean(properties.getProperty("oreFinder", "false"));
             boolean loadedAutoClicker = Boolean.parseBoolean(properties.getProperty("autoClicker", "false"));
+            boolean loadedAutoBridgeClicker = Boolean.parseBoolean(
+                    properties.getProperty("autoBridgeClicker", "false"));
             boolean loadedAutoTotem = Boolean.parseBoolean(properties.getProperty("autoTotem", "false"));
             boolean loadedAutoSprint = Boolean.parseBoolean(properties.getProperty("autoSprint", "false"));
             boolean loadedExtendedReach = Boolean.parseBoolean(properties.getProperty("extendedReach", "false"));
@@ -338,6 +351,7 @@ final class ZoomSettings {
             hitParticles = loadedHitParticles;
             oreFinder = loadedOreFinder;
             autoClicker = loadedAutoClicker;
+            autoBridgeClicker = loadedAutoBridgeClicker;
             autoTotem = loadedAutoTotem;
             autoSprint = loadedAutoSprint;
             extendedReach = loadedExtendedReach;
@@ -366,6 +380,7 @@ final class ZoomSettings {
         properties.setProperty("hitParticles", Boolean.toString(hitParticles));
         properties.setProperty("oreFinder", Boolean.toString(oreFinder));
         properties.setProperty("autoClicker", Boolean.toString(autoClicker));
+        properties.setProperty("autoBridgeClicker", Boolean.toString(autoBridgeClicker));
         properties.setProperty("autoTotem", Boolean.toString(autoTotem));
         properties.setProperty("autoSprint", Boolean.toString(autoSprint));
         properties.setProperty("extendedReach", Boolean.toString(extendedReach));

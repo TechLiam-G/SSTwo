@@ -24,6 +24,7 @@ final class CheatController {
     private static final List<String> oreLines = new ArrayList<>();
 
     private static long nextClickTime;
+    private static long nextUseClickTime;
     private static long nextTotemAttemptTick;
     private static int oreScanTicks;
     private static BlockPos autoMiningPosition;
@@ -41,6 +42,7 @@ final class CheatController {
     static void tick(Minecraft client) {
         if (client.player == null || client.level == null || client.gameMode == null) {
             nextClickTime = 0;
+            nextUseClickTime = 0;
             nextTotemAttemptTick = 0;
             autoMiningPosition = null;
             restoreReach();
@@ -52,6 +54,7 @@ final class CheatController {
 
         if (client.gui.screen() != null) {
             nextClickTime = 0;
+            nextUseClickTime = 0;
             restoreAutoTool(client);
             restoreReach();
             if (autoEatPlayer != null && !autoEatPlayer.isUsingItem()) {
@@ -87,6 +90,11 @@ final class CheatController {
         } else {
             nextClickTime = 0;
             autoMiningPosition = null;
+        }
+        if (ZoomSettings.isAutoBridgeClickerEnabled()) {
+            autoBridgeClick(client);
+        } else {
+            nextUseClickTime = 0;
         }
         if (ZoomSettings.isAutoSprintEnabled()
                 && client.options.keyUp.isDown()
@@ -263,6 +271,24 @@ final class CheatController {
         if (now >= nextClickTime) {
             nextClickTime = now + AUTOCLICK_INTERVAL_NANOS;
             client.gameMode.attack(client.player, client.crosshairPickEntity);
+        }
+    }
+
+    private static void autoBridgeClick(Minecraft client) {
+        if (!client.options.keyUse.isDown()) {
+            nextUseClickTime = 0;
+            return;
+        }
+
+        long now = System.nanoTime();
+        if (now < nextUseClickTime) {
+            return;
+        }
+        nextUseClickTime = now + AUTOCLICK_INTERVAL_NANOS;
+        if (client.hitResult instanceof BlockHitResult blockHit) {
+            client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, blockHit);
+        } else {
+            client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND);
         }
     }
 
