@@ -196,6 +196,8 @@ public final class SSTwoSettingsScreen extends Screen {
                 autoToolLabel(), ZoomSettings::toggleAutoTool, this::autoToolLabel);
         addToggleOption(Category.CHEATS, "auto eat food hunger automatic",
                 autoEatLabel(), ZoomSettings::toggleAutoEat, this::autoEatLabel);
+        addToggleOption(Category.CHEATS, "no explosion particles hide blast only",
+                noExplosionParticlesLabel(), ZoomSettings::toggleNoExplosionParticles, this::noExplosionParticlesLabel);
     }
 
     private void addKeybindOptions() {
@@ -253,6 +255,7 @@ public final class SSTwoSettingsScreen extends Screen {
     private void finishKeybindSelection() {
         KeyMapping keyMapping = selectedKeyMapping;
         selectedKeyMapping = null;
+        KeyMapping.resetMapping();
         minecraft.options.save();
         buttonMessage(keyMapping, keybindLabel(keyMapping));
     }
@@ -487,6 +490,11 @@ public final class SSTwoSettingsScreen extends Screen {
     private Component autoEatLabel() {
         return Component.literal("Auto eat (hotbar food when hunger is low)  •  "
                 + onOff(ZoomSettings.isAutoEatEnabled()));
+    }
+
+    private Component noExplosionParticlesLabel() {
+        return Component.literal("No explosion particles (other particles unaffected)  •  "
+                + onOff(ZoomSettings.hasNoExplosionParticles()));
     }
 
     private String onOff(boolean enabled) {

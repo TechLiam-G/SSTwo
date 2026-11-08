@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "com.sstwo.client.mixin",
+  "client": [
+    "ParticleEngineMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -41,6 +41,10 @@ public final class SSTwoClient implements ClientModInitializer {
         return CUSTOM_KEY_MAPPINGS;
     }
 
+    public static boolean hasNoExplosionParticles() {
+        return ZoomSettings.hasNoExplosionParticles();
+    }
+
     private static KeyMapping registerKey(String translationKey, int defaultKey) {
         return KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 translationKey,

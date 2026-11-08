@@ -40,6 +40,7 @@ final class ZoomSettings {
     private static boolean zoomHud = true;
     private static boolean compactHud;
     private static boolean hitParticles = true;
+    private static boolean noExplosionParticles;
     private static boolean oreFinder;
     private static boolean autoClicker;
     private static boolean autoBridgeClicker;
@@ -112,6 +113,10 @@ final class ZoomSettings {
 
     static boolean hasHitParticles() {
         return hitParticles;
+    }
+
+    static boolean hasNoExplosionParticles() {
+        return noExplosionParticles;
     }
 
     static int getHitParticleStyle() {
@@ -227,6 +232,11 @@ final class ZoomSettings {
         save();
     }
 
+    static void toggleNoExplosionParticles() {
+        noExplosionParticles = !noExplosionParticles;
+        save();
+    }
+
     static void cycleHitParticleStyle() {
         hitParticleStyle = (hitParticleStyle + 1) % HIT_PARTICLE_STYLES.length;
         save();
@@ -297,6 +307,7 @@ final class ZoomSettings {
         zoomHud = true;
         compactHud = false;
         hitParticles = true;
+        noExplosionParticles = false;
         oreFinder = false;
         autoClicker = false;
         autoBridgeClicker = false;
@@ -332,6 +343,8 @@ final class ZoomSettings {
             boolean loadedZoomHud = Boolean.parseBoolean(properties.getProperty("zoomHud", "true"));
             boolean loadedCompactHud = Boolean.parseBoolean(properties.getProperty("compactHud", "false"));
             boolean loadedHitParticles = Boolean.parseBoolean(properties.getProperty("hitParticles", "true"));
+            boolean loadedNoExplosionParticles = Boolean.parseBoolean(
+                    properties.getProperty("noExplosionParticles", "false"));
             boolean loadedOreFinder = Boolean.parseBoolean(properties.getProperty("oreFinder", "false"));
             boolean loadedAutoClicker = Boolean.parseBoolean(properties.getProperty("autoClicker", "false"));
             boolean loadedAutoBridgeClicker = Boolean.parseBoolean(
@@ -383,6 +396,7 @@ final class ZoomSettings {
             zoomHud = loadedZoomHud;
             compactHud = loadedCompactHud;
             hitParticles = loadedHitParticles;
+            noExplosionParticles = loadedNoExplosionParticles;
             oreFinder = loadedOreFinder;
             autoClicker = loadedAutoClicker;
             autoBridgeClicker = loadedAutoBridgeClicker;
@@ -414,6 +428,7 @@ final class ZoomSettings {
         properties.setProperty("zoomHud", Boolean.toString(zoomHud));
         properties.setProperty("compactHud", Boolean.toString(compactHud));
         properties.setProperty("hitParticles", Boolean.toString(hitParticles));
+        properties.setProperty("noExplosionParticles", Boolean.toString(noExplosionParticles));
         properties.setProperty("oreFinder", Boolean.toString(oreFinder));
         properties.setProperty("autoClicker", Boolean.toString(autoClicker));
         properties.setProperty("autoBridgeClicker", Boolean.toString(autoBridgeClicker));

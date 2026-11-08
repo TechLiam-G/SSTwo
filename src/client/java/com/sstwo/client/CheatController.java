@@ -19,6 +19,7 @@ import java.util.List;
 
 final class CheatController {
     private static final int MAX_CATCH_UP_CLICKS_PER_TICK = 100;
+    private static final int AUTO_TOTEM_RETRY_TICKS = 5;
     private static final int ORE_SCAN_RADIUS = 8;
     private static final int MAX_ORE_RESULTS = 4;
     private static final List<String> oreLines = new ArrayList<>();
@@ -310,7 +311,11 @@ final class CheatController {
     private static void equipTotem(Minecraft client) {
         var player = client.player;
         long gameTime = client.level.getGameTime();
-        if (player.getOffhandItem().is(Items.TOTEM_OF_UNDYING) || gameTime < nextTotemAttemptTick) {
+        if (player.getOffhandItem().is(Items.TOTEM_OF_UNDYING)) {
+            nextTotemAttemptTick = 0;
+            return;
+        }
+        if (player.containerMenu != player.inventoryMenu || gameTime < nextTotemAttemptTick) {
             return;
         }
 
@@ -321,7 +326,7 @@ final class CheatController {
             }
 
             int menuSlot = inventorySlot < 9 ? inventorySlot + 36 : inventorySlot;
-            nextTotemAttemptTick = gameTime + 20;
+            nextTotemAttemptTick = gameTime + AUTO_TOTEM_RETRY_TICKS;
             client.gameMode.handleContainerInput(
                     player.inventoryMenu.containerId,
                     menuSlot,
