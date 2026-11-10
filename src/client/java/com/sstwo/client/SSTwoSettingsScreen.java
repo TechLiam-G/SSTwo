@@ -186,12 +186,14 @@ public final class SSTwoSettingsScreen extends Screen {
                 autoBridgeClickerLabel(), ZoomSettings::toggleAutoBridgeClicker, this::autoBridgeClickerLabel);
         addCpsOption("bridge autoclicker right click clicks per second cps", "Bridge speed",
                 ZoomSettings::getAutoBridgeClickerCps, ZoomSettings::setAutoBridgeClickerCps);
+        addKnockbackOption();
         addToggleOption(Category.CHEATS, "auto totem offhand pop re-equip inventory",
                 autoTotemLabel(), ZoomSettings::toggleAutoTotem, this::autoTotemLabel);
         addToggleOption(Category.CHEATS, "auto sprint run forward",
                 autoSprintLabel(), ZoomSettings::toggleAutoSprint, this::autoSprintLabel);
-        addToggleOption(Category.CHEATS, "extended longer long reach block entity interaction distance",
-                extendedReachLabel(), ZoomSettings::toggleExtendedReach, this::extendedReachLabel);
+        addToggleOption(Category.CHEATS, "fly flying flight space descend sneak",
+                flyLabel(), ZoomSettings::toggleFly, this::flyLabel);
+        addExtendedReachOption();
         addToggleOption(Category.CHEATS, "auto tool best pickaxe axe shovel mining switch hotbar",
                 autoToolLabel(), ZoomSettings::toggleAutoTool, this::autoToolLabel);
         addToggleOption(Category.CHEATS, "auto eat food hunger automatic",
@@ -305,6 +307,50 @@ public final class SSTwoSettingsScreen extends Screen {
                 cpsButton,
                 new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("+"),
                         () -> changeCps(label, cpsSupplier, cpsSetter, cpsButton, 1)));
+    }
+
+    private void addKnockbackOption() {
+        int narrowWidth = 38;
+        int labelWidth = contentWidth - narrowWidth * 2 - 12;
+        SSTwoButton knockbackButton = new SSTwoButton(
+                0, 0, labelWidth, 22, knockbackLabel(), () -> {});
+        addOption(Category.CHEATS, "hit attack knockback strength amount per hit",
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("−"),
+                        () -> changeKnockback(-10, knockbackButton)),
+                knockbackButton,
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("+"),
+                        () -> changeKnockback(10, knockbackButton)));
+    }
+
+    private void addExtendedReachOption() {
+        int narrowWidth = 38;
+        int labelWidth = contentWidth - narrowWidth * 2 - 12;
+        SSTwoButton extendedReachButton = new SSTwoButton(
+                0, 0, labelWidth, 22, extendedReachLabel(), () -> {});
+        extendedReachButton.setAction(() -> {
+            ZoomSettings.toggleExtendedReach();
+            extendedReachButton.setMessage(extendedReachLabel());
+        });
+        addOption(Category.CHEATS, "extended entity reach hit attack entity interaction distance range blocks 100",
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("−"),
+                        () -> changeReachDistance(-1, extendedReachButton)),
+                extendedReachButton,
+                new SSTwoButton(0, 0, narrowWidth, 22, Component.literal("+"),
+                        () -> changeReachDistance(1, extendedReachButton)));
+    }
+
+    private void changeReachDistance(int amount, SSTwoButton reachButton) {
+        ZoomSettings.setReachDistance(ZoomSettings.getReachDistance() + amount);
+        reachButton.setMessage(extendedReachLabel());
+    }
+
+    private void changeKnockback(int amount, SSTwoButton knockbackButton) {
+        ZoomSettings.setHitKnockbackPercent(ZoomSettings.getHitKnockbackPercent() + amount);
+        knockbackButton.setMessage(knockbackLabel());
+    }
+
+    private Component knockbackLabel() {
+        return Component.literal("Hit knockback  •  " + ZoomSettings.getHitKnockbackPercent() + "%");
     }
 
     private void changeCps(String label, IntSupplier cpsSupplier, IntConsumer cpsSetter,
@@ -477,9 +523,14 @@ public final class SSTwoSettingsScreen extends Screen {
                 + onOff(ZoomSettings.isAutoSprintEnabled()));
     }
 
+    private Component flyLabel() {
+        return Component.literal("Fly (server permitting)  •  " + onOff(ZoomSettings.isFlyEnabled()));
+    }
+
     private Component extendedReachLabel() {
-        return Component.literal("Extended reach (6 blocks; server permitting)  •  "
-                + onOff(ZoomSettings.isExtendedReachEnabled()));
+        return Component.literal("Entity hit reach (server permitting; blocks unaffected)  •  "
+                + onOff(ZoomSettings.isExtendedReachEnabled()) + "  •  "
+                + ZoomSettings.getReachDistance() + " blocks (1–100)");
     }
 
     private Component autoToolLabel() {

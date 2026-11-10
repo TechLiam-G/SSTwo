@@ -45,6 +45,10 @@ public final class SSTwoClient implements ClientModInitializer {
         return ZoomSettings.hasNoExplosionParticles();
     }
 
+    public static float getHitKnockbackMultiplier() {
+        return ZoomSettings.getHitKnockbackPercent() / 100.0F;
+    }
+
     private static KeyMapping registerKey(String translationKey, int defaultKey) {
         return KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 translationKey,

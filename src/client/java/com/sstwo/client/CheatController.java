@@ -8,6 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Items;
@@ -33,8 +34,10 @@ final class CheatController {
     private static int autoEatOriginalSlot = -1;
     private static LocalPlayer autoEatPlayer;
     private static LocalPlayer reachPlayer;
-    private static double originalBlockReach;
+    private static LocalPlayer flyPlayer;
     private static double originalEntityReach;
+    private static boolean originalMayFly;
+    private static boolean originalFlying;
     private static boolean reachApplied;
 
     private CheatController() {
@@ -47,10 +50,17 @@ final class CheatController {
             nextTotemAttemptTick = 0;
             autoMiningPosition = null;
             restoreReach();
+            restoreFly();
             originalHotbarSlot = -1;
             restoreAutoEat();
             oreLines.clear();
             return;
+        }
+
+        if (ZoomSettings.isFlyEnabled()) {
+            applyFly(client.player);
+        } else {
+            restoreFly();
         }
 
         if (client.gui.screen() != null) {
@@ -117,13 +127,11 @@ final class CheatController {
         if (reachPlayer != player) {
             restoreReach();
             reachPlayer = player;
-            AttributeInstance blockReach = player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
             AttributeInstance entityReach = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-            if (blockReach == null || entityReach == null) {
+            if (entityReach == null) {
                 reachPlayer = null;
                 return;
             }
-            originalBlockReach = blockReach.getBaseValue();
             originalEntityReach = entityReach.getBaseValue();
             reachApplied = true;
         }
@@ -131,23 +139,48 @@ final class CheatController {
         if (!reachApplied) {
             return;
         }
-        player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).setBaseValue(6.0);
-        player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).setBaseValue(6.0);
+        player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)
+                .setBaseValue(ZoomSettings.getReachDistance());
     }
 
     private static void restoreReach() {
         if (reachApplied && reachPlayer != null) {
-            AttributeInstance blockReach = reachPlayer.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
             AttributeInstance entityReach = reachPlayer.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-            if (blockReach != null) {
-                blockReach.setBaseValue(originalBlockReach);
-            }
             if (entityReach != null) {
                 entityReach.setBaseValue(originalEntityReach);
             }
         }
         reachPlayer = null;
         reachApplied = false;
+    }
+
+    private static void applyFly(LocalPlayer player) {
+        if (flyPlayer != player) {
+            restoreFly();
+            flyPlayer = player;
+            Abilities abilities = player.getAbilities();
+            originalMayFly = abilities.mayfly;
+            originalFlying = abilities.flying;
+        }
+
+        Abilities abilities = player.getAbilities();
+        if (!abilities.mayfly || !abilities.flying) {
+            abilities.mayfly = true;
+            abilities.flying = true;
+            player.onUpdateAbilities();
+        }
+    }
+
+    private static void restoreFly() {
+        if (flyPlayer != null) {
+            Abilities abilities = flyPlayer.getAbilities();
+            if (abilities.mayfly != originalMayFly || abilities.flying != originalFlying) {
+                abilities.mayfly = originalMayFly;
+                abilities.flying = originalFlying;
+                flyPlayer.onUpdateAbilities();
+            }
+        }
+        flyPlayer = null;
     }
 
     private static void autoTool(Minecraft client) {

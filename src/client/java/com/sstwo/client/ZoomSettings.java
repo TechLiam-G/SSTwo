@@ -22,6 +22,10 @@ final class ZoomSettings {
     private static final int MAX_HUD_OPACITY = 100;
     private static final int MIN_AUTOCLICK_CPS = 3;
     private static final int MAX_AUTOCLICK_CPS = 1000;
+    private static final int MIN_HIT_KNOCKBACK_PERCENT = 0;
+    private static final int MAX_HIT_KNOCKBACK_PERCENT = 500;
+    private static final int MIN_REACH_DISTANCE = 1;
+    private static final int MAX_REACH_DISTANCE = 100;
     private static final String[] HUD_POSITIONS = {"Top left", "Top right", "Bottom left", "Bottom right"};
     private static final String[] CROSSHAIR_MODES = {"Vanilla", "PvP", "Bridging"};
     private static final String[] HIT_PARTICLE_STYLES = {"Stars", "Purple portal", "End rod", "Enchant"};
@@ -46,9 +50,12 @@ final class ZoomSettings {
     private static boolean autoBridgeClicker;
     private static int autoClickerCps = 8;
     private static int autoBridgeClickerCps = 20;
+    private static int hitKnockbackPercent = 100;
     private static boolean autoTotem;
     private static boolean autoSprint;
+    private static boolean fly;
     private static boolean extendedReach;
+    private static int reachDistance = 6;
     private static boolean autoTool;
     private static boolean autoEat;
 
@@ -147,6 +154,10 @@ final class ZoomSettings {
         return autoBridgeClickerCps;
     }
 
+    static int getHitKnockbackPercent() {
+        return hitKnockbackPercent;
+    }
+
     static boolean isAutoTotemEnabled() {
         return autoTotem;
     }
@@ -155,8 +166,16 @@ final class ZoomSettings {
         return autoSprint;
     }
 
+    static boolean isFlyEnabled() {
+        return fly;
+    }
+
     static boolean isExtendedReachEnabled() {
         return extendedReach;
+    }
+
+    static int getReachDistance() {
+        return reachDistance;
     }
 
     static boolean isAutoToolEnabled() {
@@ -267,6 +286,15 @@ final class ZoomSettings {
         save();
     }
 
+    static void setHitKnockbackPercent(int value) {
+        hitKnockbackPercent = Math.clamp(
+                value,
+                MIN_HIT_KNOCKBACK_PERCENT,
+                MAX_HIT_KNOCKBACK_PERCENT
+        );
+        save();
+    }
+
     static void toggleAutoTotem() {
         autoTotem = !autoTotem;
         save();
@@ -277,8 +305,18 @@ final class ZoomSettings {
         save();
     }
 
+    static void toggleFly() {
+        fly = !fly;
+        save();
+    }
+
     static void toggleExtendedReach() {
         extendedReach = !extendedReach;
+        save();
+    }
+
+    static void setReachDistance(int value) {
+        reachDistance = Math.clamp(value, MIN_REACH_DISTANCE, MAX_REACH_DISTANCE);
         save();
     }
 
@@ -313,9 +351,12 @@ final class ZoomSettings {
         autoBridgeClicker = false;
         autoClickerCps = 8;
         autoBridgeClickerCps = 20;
+        hitKnockbackPercent = 100;
         autoTotem = false;
         autoSprint = false;
+        fly = false;
         extendedReach = false;
+        reachDistance = 6;
         autoTool = false;
         autoEat = false;
         save();
@@ -352,9 +393,13 @@ final class ZoomSettings {
             int loadedAutoClickerCps = Integer.parseInt(properties.getProperty("autoClickerCps", "8"));
             int loadedAutoBridgeClickerCps = Integer.parseInt(
                     properties.getProperty("autoBridgeClickerCps", "20"));
+            int loadedHitKnockbackPercent = Integer.parseInt(
+                    properties.getProperty("hitKnockbackPercent", "100"));
             boolean loadedAutoTotem = Boolean.parseBoolean(properties.getProperty("autoTotem", "false"));
             boolean loadedAutoSprint = Boolean.parseBoolean(properties.getProperty("autoSprint", "false"));
+            boolean loadedFly = Boolean.parseBoolean(properties.getProperty("fly", "false"));
             boolean loadedExtendedReach = Boolean.parseBoolean(properties.getProperty("extendedReach", "false"));
+            int loadedReachDistance = Integer.parseInt(properties.getProperty("reachDistance", "6"));
             boolean loadedAutoTool = Boolean.parseBoolean(properties.getProperty("autoTool", "false"));
             boolean loadedAutoEat = Boolean.parseBoolean(properties.getProperty("autoEat", "false"));
             if (loadedFov < MIN_ZOOM_FOV || loadedFov > MAX_ZOOM_FOV) {
@@ -382,6 +427,13 @@ final class ZoomSettings {
                     || loadedAutoBridgeClickerCps > MAX_AUTOCLICK_CPS) {
                 throw new IllegalArgumentException("autoBridgeClickerCps must be between 3 and 1000");
             }
+            if (loadedHitKnockbackPercent < MIN_HIT_KNOCKBACK_PERCENT
+                    || loadedHitKnockbackPercent > MAX_HIT_KNOCKBACK_PERCENT) {
+                throw new IllegalArgumentException("hitKnockbackPercent must be between 0 and 500");
+            }
+            if (loadedReachDistance < MIN_REACH_DISTANCE || loadedReachDistance > MAX_REACH_DISTANCE) {
+                throw new IllegalArgumentException("reachDistance must be between 1 and 100");
+            }
             zoomFov = loadedFov;
             zoomStep = loadedStep;
             hudOpacity = loadedHudOpacity;
@@ -402,9 +454,12 @@ final class ZoomSettings {
             autoBridgeClicker = loadedAutoBridgeClicker;
             autoClickerCps = loadedAutoClickerCps;
             autoBridgeClickerCps = loadedAutoBridgeClickerCps;
+            hitKnockbackPercent = loadedHitKnockbackPercent;
             autoTotem = loadedAutoTotem;
             autoSprint = loadedAutoSprint;
+            fly = loadedFly;
             extendedReach = loadedExtendedReach;
+            reachDistance = loadedReachDistance;
             autoTool = loadedAutoTool;
             autoEat = loadedAutoEat;
         } catch (IOException | IllegalArgumentException exception) {
@@ -434,9 +489,12 @@ final class ZoomSettings {
         properties.setProperty("autoBridgeClicker", Boolean.toString(autoBridgeClicker));
         properties.setProperty("autoClickerCps", Integer.toString(autoClickerCps));
         properties.setProperty("autoBridgeClickerCps", Integer.toString(autoBridgeClickerCps));
+        properties.setProperty("hitKnockbackPercent", Integer.toString(hitKnockbackPercent));
         properties.setProperty("autoTotem", Boolean.toString(autoTotem));
         properties.setProperty("autoSprint", Boolean.toString(autoSprint));
+        properties.setProperty("fly", Boolean.toString(fly));
         properties.setProperty("extendedReach", Boolean.toString(extendedReach));
+        properties.setProperty("reachDistance", Integer.toString(reachDistance));
         properties.setProperty("autoTool", Boolean.toString(autoTool));
         properties.setProperty("autoEat", Boolean.toString(autoEat));
         try {
